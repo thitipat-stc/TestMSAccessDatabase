@@ -56,10 +56,17 @@ namespace TestMSAccessDatabase
             cmd.ExecuteNonQuery();
             con.Close();*/
 
-            List<OleDbParameter> parameters = new List<OleDbParameter>();
+            /*List<OleDbParameter> parameters = new List<OleDbParameter>();
             parameters.Add(new OleDbParameter("@Name", tbName.Text));
             parameters.Add(new OleDbParameter("@Age", Convert.ToInt32(tbAge.Text)));
-            Dbms.Execute("Insert into Tbl_User (Name,Age) values (@Name,@Age)", parameters);
+            Dbms.Execute("Insert into Tbl_User (Name,Age) values (@Name,@Age)", parameters);*/
+
+            List<Parameter> parameters = new List<Parameter>
+            {
+                new Parameter("Name", tbName.Text),
+                new Parameter("Age", Convert.ToInt32(tbAge.Text))
+            };
+            Dbms.SetInsert("Tbl_User", parameters);
 
             GetStudent();
         }
@@ -76,11 +83,19 @@ namespace TestMSAccessDatabase
             con.Close();
             GetStudent();*/
 
-            List<OleDbParameter> parameters = new List<OleDbParameter>();
+            /*List<OleDbParameter> parameters = new List<OleDbParameter>();
             parameters.Add(new OleDbParameter("@Age", Convert.ToInt32(tbAge.Text)));
             parameters.Add(new OleDbParameter("@Name", tbName.Text));
             parameters.Add(new OleDbParameter("@ID", Convert.ToInt32(tbID.Text)));
-            Dbms.Execute("Update Tbl_User Set Name=@Name, Age=@Age Where ID=@ID", parameters);
+            Dbms.Execute("Update Tbl_User Set Name=@Name, Age=@Age Where ID=@ID", parameters);*/
+
+            List<Parameter> parameters = new List<Parameter>
+            {
+                new Parameter("Name", tbName.Text),
+                new Parameter("Age", Convert.ToInt32(tbAge.Text))
+            };
+
+            Dbms.SetUpdate("Tbl_User", parameters, new Parameter("ID", Convert.ToInt32(tbID.Text)));
 
             GetStudent();
         }

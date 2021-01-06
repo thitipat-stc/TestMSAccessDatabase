@@ -23,7 +23,7 @@ namespace TestMSAccessDatabase
         }
 
         public bool IsConnectSuccess()
-        { 
+        {
             // test connect 
             OleDbConnection connection = new OleDbConnection(this.ConnectionString);
             try
@@ -43,16 +43,17 @@ namespace TestMSAccessDatabase
                 {
                     connection.Close();
                 }
-            } 
+            }
         }
 
+        // Normal
         public bool Execute(string commandString)
         {
             OleDbConnection connection = new OleDbConnection(this.ConnectionString);
             OleDbCommand command = new OleDbCommand(commandString, connection);
 
             try
-            { 
+            {
                 int rowAffected = 0;
 
                 connection.Open();
@@ -74,16 +75,16 @@ namespace TestMSAccessDatabase
                 {
                     connection.Close();
                 }
-            } 
+            }
         }
 
         public bool Execute(string commandString, List<OleDbParameter> parameters)
-        { 
+        {
             OleDbConnection connection = new OleDbConnection(this.ConnectionString);
             OleDbCommand command = new OleDbCommand(commandString, connection);
 
             try
-            { 
+            {
                 int rowAffected = 0;
 
                 if (parameters != null)
@@ -93,7 +94,7 @@ namespace TestMSAccessDatabase
                         command.Parameters.Add(item);
                     }
                 }
-                 
+
                 connection.Open();
 
                 rowAffected = command.ExecuteNonQuery();
@@ -113,11 +114,11 @@ namespace TestMSAccessDatabase
                 {
                     connection.Close();
                 }
-            } 
+            }
         }
 
         public DataSet GetDataSet(string commandString)
-        { 
+        {
             OleDbDataAdapter adapter = new OleDbDataAdapter(commandString, this.ConnectionString);
             DataSet ds = new DataSet();
 
@@ -130,16 +131,16 @@ namespace TestMSAccessDatabase
             catch (Exception ex)
             {
                 throw ex;
-            } 
+            }
         }
 
         public DataSet GetDataSet(string commandString, List<OleDbParameter> parameters)
-        { 
+        {
             OleDbDataAdapter adapter = new OleDbDataAdapter(commandString, this.ConnectionString);
             DataSet ds = new DataSet();
 
             try
-            { 
+            {
                 if (parameters != null)
                 {
                     foreach (OleDbParameter item in parameters)
@@ -155,11 +156,11 @@ namespace TestMSAccessDatabase
             catch (Exception ex)
             {
                 throw ex;
-            } 
+            }
         }
 
         public DataTable GetDataTable(string commandString)
-        { 
+        {
             OleDbDataAdapter adapter = new OleDbDataAdapter(commandString, this.ConnectionString);
             DataTable dt = new DataTable();
 
@@ -172,7 +173,7 @@ namespace TestMSAccessDatabase
             catch (Exception ex)
             {
                 throw ex;
-            } 
+            }
         }
 
         public DataTable GetDataTable(string commandString, List<OleDbParameter> parameters)
@@ -201,6 +202,214 @@ namespace TestMSAccessDatabase
                 throw ex;
             }
 
+        }
+
+        // Function
+        public bool SetInsert(string table, List<Parameter> parameters)
+        {
+            try
+            {
+                StringBuilder setColumn = new StringBuilder();
+                StringBuilder setParameter = new StringBuilder();
+
+                List<OleDbParameter> OleParameters = new List<OleDbParameter>();
+                foreach (var prmt in parameters)
+                {
+                    int i = parameters.IndexOf(prmt);
+
+                    setColumn.Append(prmt.name);
+                    setParameter.Append($"@{prmt.name}");
+
+                    if (i != parameters.Count - 1)
+                    {
+                        setColumn.Append(", ");
+                        setParameter.Append(", ");
+                    }
+
+                    OleParameters.Add(new OleDbParameter(prmt.name, prmt.value));
+                }
+
+                string query = "INSERT INTO " + table + " (" + setColumn + ") VALUES (" + setParameter + ")";
+
+                return Execute(query, OleParameters);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataSet SetInsertDS(string table, List<Parameter> parameters)
+        {
+            try
+            {
+                StringBuilder columns = new StringBuilder();
+                StringBuilder values = new StringBuilder();
+
+                List<OleDbParameter> OleParameters = new List<OleDbParameter>();
+                foreach (var prmt in parameters)
+                {
+                    int i = parameters.IndexOf(prmt);
+
+                    columns.Append(prmt.name);
+                    values.Append($"@{prmt.name}");
+
+                    if (i != parameters.Count - 1)
+                    {
+                        columns.Append(", ");
+                        values.Append(", ");
+                    }
+
+                    OleParameters.Add(new OleDbParameter(prmt.name, prmt.value));
+                }
+
+                string query = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")";
+
+                return GetDataSet(query, OleParameters);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataTable SetInsertDT(string table, List<Parameter> parameters)
+        {
+            try
+            {
+                StringBuilder columns = new StringBuilder();
+                StringBuilder values = new StringBuilder();
+
+                List<OleDbParameter> OleParameters = new List<OleDbParameter>();
+                foreach (var prmt in parameters)
+                {
+                    int i = parameters.IndexOf(prmt);
+
+                    columns.Append(prmt.name);
+                    values.Append($"@{prmt.name}");
+
+                    if (i != parameters.Count - 1)
+                    {
+                        columns.Append(", ");
+                        values.Append(", ");
+                    }
+
+                    OleParameters.Add(new OleDbParameter(prmt.name, prmt.value));
+                }
+
+                string query = "INSERT INTO " + table + " (" + columns + ") VALUES (" + values + ")";
+
+                return GetDataTable(query, OleParameters);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool SetUpdate(string table, List<Parameter> parameters, Parameter where)
+        {
+            try
+            {
+                StringBuilder setParameter = new StringBuilder();
+
+                List<OleDbParameter> OleParameters = new List<OleDbParameter>();
+                foreach (var prmt in parameters)
+                {
+                    int i = parameters.IndexOf(prmt);
+
+                    setParameter.Append($"{prmt.name} = @{prmt.name}");
+
+                    if (i != parameters.Count - 1)
+                    {
+                        setParameter.Append(", ");
+                    }
+
+                    OleParameters.Add(new OleDbParameter(prmt.name, prmt.value));
+                }
+
+                string setWhere = $"{where.name} = @{where.name}";
+
+                OleParameters.Add(new OleDbParameter(where.name, where.value));
+
+                string query = "UPDATE " + table + " SET " + setParameter + " WHERE " + setWhere;
+
+                return Execute(query, OleParameters);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataSet SetUpdateDS(string table, List<Parameter> parameters, Parameter where)
+        {
+            try
+            {
+                StringBuilder setParameter = new StringBuilder();
+
+                List<OleDbParameter> OleParameters = new List<OleDbParameter>();
+                foreach (var prmt in parameters)
+                {
+                    int i = parameters.IndexOf(prmt);
+
+                    setParameter.Append($"{prmt.name} = @{prmt.name}");
+
+                    if (i != parameters.Count - 1)
+                    {
+                        setParameter.Append(", ");
+                    }
+
+                    OleParameters.Add(new OleDbParameter(prmt.name, prmt.value));
+                }
+
+                string setWhere = $"{where.name} = @{where.value}";
+
+                OleParameters.Add(new OleDbParameter(where.name, where.value));
+
+                string query = "UPDATE " + table + " SET " + setParameter + " WHERE " + setWhere;
+
+                return GetDataSet(query, OleParameters);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataTable SetUpdateDT(string table, List<Parameter> parameters, Parameter where)
+        {
+            try
+            {
+                StringBuilder setParameter = new StringBuilder();
+
+                List<OleDbParameter> OleParameters = new List<OleDbParameter>();
+                foreach (var prmt in parameters)
+                {
+                    int i = parameters.IndexOf(prmt);
+
+                    setParameter.Append($"{prmt.name} = @{prmt.name}");
+
+                    if (i != parameters.Count - 1)
+                    {
+                        setParameter.Append(", ");
+                    }
+
+                    OleParameters.Add(new OleDbParameter(prmt.name, prmt.value));
+                }
+
+                string setWhere = $"{where.name} = @{where.value}";
+
+                OleParameters.Add(new OleDbParameter(where.name, where.value));
+
+                string query = "UPDATE " + table + " SET " + setParameter + " WHERE " + setWhere;
+
+                return GetDataTable(query, OleParameters);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
